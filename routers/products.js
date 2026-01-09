@@ -3,7 +3,7 @@ const router = express.Router()
 const productController = require('../controllers/productController')
 
 //category Index
-router.get('/:slug', productController.categoryIndex)
+router.get('/category/:slug', productController.categoryIndex)
 
 // show
 router.get('/:slug', productController.show)
