@@ -1,5 +1,6 @@
 const connection = require("../data/db");
 
+// show
 function show(req, res) {
   const slug = req.params.slug;
 
