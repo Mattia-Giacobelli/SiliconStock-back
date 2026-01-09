@@ -11,4 +11,6 @@ router.get('/category/:slug', productController.categoryIndex)
 // show
 router.get('/:slug', productController.show)
 
+
+
 module.exports = router
