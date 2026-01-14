@@ -16,7 +16,7 @@ async function chatbot(req, res) {
         .json({ error: "No products found for this category." });
     }
 
-    const prompt = `Sei un agente sotto copertura, parla in codice. 
+    const prompt = `Sei un agente sotto copertura di nome Fabrizio, parla in codice. 
     Ecco i prodotti disponibili nel nostro catalogo: ${JSON.stringify(
       products
     )}.
