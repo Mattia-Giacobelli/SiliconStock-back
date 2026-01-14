@@ -1,47 +1,54 @@
-const express = require('express')
-const app = express()
-const PORT = 3000
+const express = require("express");
+const app = express();
+const PORT = 3000;
 
 //Orders router
-const ordersRouter = require('./routers/ordersRouter')
+const ordersRouter = require("./routers/ordersRouter");
 
 //Products router
-const productsRouter = require('./routers/products')
+const productsRouter = require("./routers/productsRouter");
 
+//Chatbot router
+const chatbotRouter = require("./routers/chatbotRouter")
 
 // Error 500
-const errorsHandler = require('./middlewares/errorsHandler')
+const errorsHandler = require("./middlewares/errorsHandler");
 // Error 404
-const notFound = require('./middlewares/notFound')
+const notFound = require("./middlewares/notFound");
 
 //Register the body parser
-app.use(express.json())
+app.use(express.json());
 
 //Cors authorization
-const cors = require('cors')
+const cors = require("cors");
 
-app.use(cors({
-    origin: 'http://localhost:5173'
-}))
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+  })
+);
 
-app.use(express.static('public'))
+app.use(express.static("public"));
 
-app.get('/', (req, res) => {
-    res.send('SiliconStock db')
-})
+app.get("/", (req, res) => {
+  res.send("SiliconStock db");
+});
 
 //Products router
-app.use('/api/products', productsRouter)
+app.use("/api/products", productsRouter);
 
 //Orders router
-app.use('/api/orders', ordersRouter)
+app.use("/api/orders", ordersRouter);
+
+//Chatbot router
+app.use("/api/chat", chatbotRouter)
 
 // Error 500
-app.use(errorsHandler)
+app.use(errorsHandler);
 
 // Error 404
-app.use(notFound)
+app.use(notFound);
 
 app.listen(PORT, () => {
-    console.log(`Server listening on http://localhost:${PORT}`);
-})
+  console.log(`Server listening on http://localhost:${PORT}`);
+});
