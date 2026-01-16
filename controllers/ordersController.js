@@ -1,11 +1,13 @@
 const connection = require("../data/db");
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+
 
 //orders Store
 function storeOrder(req, res) {
 
     const id = Date.now()
 
-    const { first_name, last_name, phone, email, shipping_address, total_amount, discount_code_id, products } = req.body
+    const { order } = req.body
     console.log(req.body);
 
 
@@ -16,22 +18,22 @@ function storeOrder(req, res) {
     const pivotSql = 'INSERT INTO order_products (order_id, product_id, quantity) VALUES (?,?,?)'
 
     //Add validation for blank fields and incorrect data
-    if (first_name === "") {
+    if (order.first_name === "") {
         return res.json({ status: 400, error: "First name field can't be empty" })
-    } else if (last_name === "") {
+    } else if (order.last_name === "") {
         return res.json({ status: 400, error: "Last name field can't be empty" })
-    } else if (phone === "" || Number(phone) === NaN || phone.length < 10 || phone.length > 13) {
+    } else if (order.phone === "" || order.phone.length < 10 || order.phone.length > 13) {
         return res.json({ status: 400, error: "Phone field can't be empty and must be a valid number" })
-    } else if (!email.includes('@')) {
+    } else if (!order.email.includes('@')) {
         return res.json({ status: 400, error: "Provide a valid email" })
-    } else if (shipping_address === "") {
+    } else if (order.shipping_address === "") {
         return res.json({ status: 400, error: "Shipping address field can't be empty" })
     }
 
-    connection.query(sql, [id, first_name, last_name, phone, email, shipping_address, total_amount, discount_code_id], (err, results) => {
+    connection.query(sql, [id, order.first_name, order.last_name, order.phone, order.email, order.shipping_address, order.total_amount, order.discount_code_id], (err, results) => {
         if (err) return res.status(500).json({ error: true, message: err.message })
 
-        products.forEach(product => {
+        order.products.forEach(product => {
             connection.query(pivotSql, [id, product.id, product.quantity], (err, results) => {
                 if (err) return res.status(500).json({ error: true, message: err.message })
             })
@@ -42,4 +44,49 @@ function storeOrder(req, res) {
 }
 
 
-module.exports = { storeOrder };
+async function paymentIntent(req, res) {
+    try {
+        const { products } = req.body;
+
+        if (!products || !Array.isArray(products)) {
+            return res.status(400).json({ error: "Products non validi" });
+        }
+
+        const calculateOrderAmount = (items) => {
+            return items.reduce((total, item) => {
+                const price = Number(item.price
+                );
+
+                if (isNaN(price)) {
+                    throw new Error("Prezzo non valido");
+                }
+
+                return total + Math.round(price * 100);
+            }, 0);
+        };
+
+        const amount = calculateOrderAmount(products);
+
+        if (!amount || amount <= 0) {
+            return res.status(400).json({ error: "Importo non valido" });
+        }
+
+        const paymentIntent = await stripe.paymentIntents.create({
+            amount,
+            currency: "eur",
+            automatic_payment_methods: { enabled: true },
+        });
+
+        res.json({
+            clientSecret: paymentIntent.client_secret,
+        });
+
+    } catch (error) {
+        console.error("Stripe error:", error.message);
+        res.status(500).json({ error: error.message });
+    }
+};
+
+
+
+module.exports = { storeOrder, paymentIntent };
