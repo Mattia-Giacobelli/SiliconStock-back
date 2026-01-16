@@ -4,9 +4,22 @@ const connection = require("../data/db");
 function index(req, res) {
   const slug = req.params.slug;
 
-  const search = req.query.search;
+  const searchValue = req.query.searchValue
+  const filter = req.query.filter
 
-  const sql = 'SELECT products.id, products.name AS "product_name", products.slug AS "product_slug", products.description, products.technical_specs, products.img, products.price, categories.name AS "category_name", categories.slug AS "category_slug" FROM categories JOIN products ON categories.id = products.category_id'
+  console.log(searchValue, filter);
+
+
+  let sql
+
+  if (filter && filter === 'asc') {
+    sql = 'SELECT products.id, products.name AS "product_name", products.slug AS "product_slug", products.description, products.technical_specs, products.img, products.price, categories.name AS "category_name", categories.slug AS "category_slug" FROM categories JOIN products ON categories.id = products.category_id ORDER BY price'
+  } else if (filter && filter === 'desc') {
+    sql = 'SELECT products.id, products.name AS "product_name", products.slug AS "product_slug", products.description, products.technical_specs, products.img, products.price, categories.name AS "category_name", categories.slug AS "category_slug" FROM categories JOIN products ON categories.id = products.category_id ORDER BY price DESC'
+  }
+  else if (filter === '') {
+    sql = 'SELECT products.id, products.name AS "product_name", products.slug AS "product_slug", products.description, products.technical_specs, products.img, products.price, categories.name AS "category_name", categories.slug AS "category_slug" FROM categories JOIN products ON categories.id = products.category_id'
+  }
 
   connection.query(sql, [slug], (err, results) => {
     if (err) return res.status(500).json({ error: "Database query failed" });
@@ -15,10 +28,10 @@ function index(req, res) {
 
     let filteredResults
 
-    if (search) {
+    if (searchValue) {
 
-      filteredResults = results.filter(result => result.product_name.toLowerCase().includes(search) || result.description.toLowerCase().includes(search) || result.category_name.toLowerCase().includes(search))
-    } else if (!search) {
+      filteredResults = results.filter(result => result.product_name.toLowerCase().includes(searchValue) || result.description.toLowerCase().includes(searchValue) || result.category_name.toLowerCase().includes(searchValue))
+    } else if (!searchValue) {
 
       filteredResults = results
     }
