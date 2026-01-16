@@ -1,9 +1,11 @@
 const connection = require("../data/db");
+const validator = require("validator");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+const sendOrderEmail = require("../services/sendOrderEmail");
 
 
 //orders Store
-function storeOrder(req, res) {
+async function storeOrder(req, res) {
 
     const id = Date.now()
 
@@ -18,17 +20,22 @@ function storeOrder(req, res) {
     const pivotSql = 'INSERT INTO order_products (order_id, product_id, quantity) VALUES (?,?,?)'
 
     //Add validation for blank fields and incorrect data
+
+    const normalizedEmail = validator.normalizeEmail(order.email);
+
     if (order.first_name === "") {
         return res.json({ status: 400, error: "First name field can't be empty" })
     } else if (order.last_name === "") {
         return res.json({ status: 400, error: "Last name field can't be empty" })
     } else if (order.phone === "" || order.phone.length < 10 || order.phone.length > 13) {
         return res.json({ status: 400, error: "Phone field can't be empty and must be a valid number" })
-    } else if (!order.email.includes('@')) {
+    } else if (!validator.isEmail(order.email) || !normalizedEmail) {
         return res.json({ status: 400, error: "Provide a valid email" })
     } else if (order.shipping_address === "") {
         return res.json({ status: 400, error: "Shipping address field can't be empty" })
     }
+
+    await sendOrderEmail(order.email, id);
 
     connection.query(sql, [id, order.first_name, order.last_name, order.phone, order.email, order.shipping_address, order.total_amount, order.discount_code_id], (err, results) => {
         if (err) return res.status(500).json({ error: true, message: err.message })
