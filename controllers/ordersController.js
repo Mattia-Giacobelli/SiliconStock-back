@@ -5,9 +5,8 @@ const sendOrderEmail = require("../services/sendOrderEmail");
 
 
 //orders Store
-async function storeOrder(req, res) {
+function storeOrder(req, res) {
 
-    const id = Date.now()
 
     const { order } = req.body
     console.log(req.body);
@@ -35,13 +34,13 @@ async function storeOrder(req, res) {
         return res.json({ status: 400, error: "Shipping address field can't be empty" })
     }
 
-    await sendOrderEmail(order.email, id);
 
-    connection.query(sql, [id, order.first_name, order.last_name, order.phone, order.email, order.shipping_address, order.total_amount, order.discount_code_id], (err, results) => {
+
+    connection.query(sql, [order.id, order.first_name, order.last_name, order.phone, order.email, order.shipping_address, order.total_amount, order.discount_code_id], (err, results) => {
         if (err) return res.status(500).json({ error: true, message: err.message })
 
         order.products.forEach(product => {
-            connection.query(pivotSql, [id, product.id, product.quantity], (err, results) => {
+            connection.query(pivotSql, [order.id, product.id, product.quantity], (err, results) => {
                 if (err) return res.status(500).json({ error: true, message: err.message })
             })
         })
@@ -95,5 +94,16 @@ async function paymentIntent(req, res) {
 };
 
 
+//Send email confirmation
 
-module.exports = { storeOrder, paymentIntent };
+async function sendEmail(req, res) {
+    const { order } = req.body
+    console.log(req.body);
+
+
+
+    await sendOrderEmail(order.email, order.id);
+}
+
+
+module.exports = { storeOrder, paymentIntent, sendEmail };

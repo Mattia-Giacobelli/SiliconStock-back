@@ -8,5 +8,7 @@ router.post('/newOrder', ordersController.storeOrder)
 //Payment intent
 router.post('/create-payment-intent', ordersController.paymentIntent)
 
+router.post('/send-email', ordersController.sendEmail)
+
 
 module.exports = router
