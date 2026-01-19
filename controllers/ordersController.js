@@ -3,6 +3,9 @@ const validator = require("validator");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const sendOrderEmail = require("../services/sendOrderEmail");
 
+let mail
+let orderId
+
 
 //orders Store
 function storeOrder(req, res) {
@@ -34,10 +37,13 @@ function storeOrder(req, res) {
         return res.json({ status: 400, error: "Shipping address field can't be empty" })
     }
 
-
+    mail = order.email
+    orderId = order.id
 
     connection.query(sql, [order.id, order.first_name, order.last_name, order.phone, order.email, order.shipping_address, order.total_amount, order.discount_code_id], (err, results) => {
         if (err) return res.status(500).json({ error: true, message: err.message })
+
+
 
         order.products.forEach(product => {
             connection.query(pivotSql, [order.id, product.id, product.quantity], (err, results) => {
@@ -102,7 +108,7 @@ async function sendEmail(req, res) {
 
 
 
-    await sendOrderEmail(order.email, order.id);
+    await sendOrderEmail(mail, orderId);
 }
 
 

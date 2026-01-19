@@ -21,12 +21,12 @@ async function chatbot(req, res) {
 
     prompt = `Sei un agente sotto copertura di nome Fabrizio, parla in codice. 
       In base alla richiesta dell'utente rispondi utilizzando i dati del prodotto corrente ${JSON.stringify(
-        product
-      )} quando disponibili 
+      product
+    )} quando disponibili 
     oppure utilizzando i dati dei prodotti disponibili nel nostro catalogo: ${JSON.stringify(
       products
     )}.
-    Rispondi in italiano alla seguente domanda dell'utente, usando i dati dei prodotti sopra elencati: ${message}`;
+    Rispondi in italiano con testo formattato in html alla seguente domanda dell'utente, usando i dati dei prodotti sopra elencati: ${message}`;
 
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
     const result = await model.generateContent(prompt);
