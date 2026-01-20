@@ -20,15 +20,27 @@ function index(req, res) {
   else if (filter === '') {
     sql = 'SELECT products.id, products.name AS "product_name", products.slug AS "product_slug", products.description, products.technical_specs, products.img, products.price, categories.name AS "category_name", categories.slug AS "category_slug" FROM categories JOIN products ON categories.id = products.category_id'
   } else if (searchValue !== '') {
-    if (filter === 'asc' || filter === '') {
+    if (filter === 'name-asc' || filter === '') {
       sql = 'SELECT products.id, products.name AS "product_name", products.slug AS "product_slug", products.description, products.technical_specs, products.img, products.price, categories.name AS "category_name", categories.slug AS "category_slug" FROM categories JOIN products ON categories.id = products.category_id ORDER BY products.name'
-    } else if (filter && filter === 'desc') {
+    } else if (filter && filter === 'name-desc') {
       sql = 'SELECT products.id, products.name AS "product_name", products.slug AS "product_slug", products.description, products.technical_specs, products.img, products.price, categories.name AS "category_name", categories.slug AS "category_slug" FROM categories JOIN products ON categories.id = products.category_id ORDER BY products.name DESC'
+    } else if (filter && filter === 'new') {
+      sql = `SELECT products.id, products.name AS "product_name", products.slug AS "product_slug", products.description, products.technical_specs, products.img, products.price, categories.name AS "category_name", categories.slug AS "category_slug" FROM categories JOIN products ON categories.id = products.category_id ORDER BY products.created_at DESC`
+    } else if (filter && filter === 'old') {
+      sql = `SELECT products.id, products.name AS "product_name", products.slug AS "product_slug", products.description, products.technical_specs, products.img, products.price, categories.name AS "category_name", categories.slug AS "category_slug" FROM categories JOIN products ON categories.id = products.category_id ORDER BY products.created_at`
+    } if (filter && filter === 'asc') {
+      sql = 'SELECT products.id, products.name AS "product_name", products.slug AS "product_slug", products.description, products.technical_specs, products.img, products.price, categories.name AS "category_name", categories.slug AS "category_slug" FROM categories JOIN products ON categories.id = products.category_id ORDER BY price'
+    } else if (filter && filter === 'desc') {
+      sql = 'SELECT products.id, products.name AS "product_name", products.slug AS "product_slug", products.description, products.technical_specs, products.img, products.price, categories.name AS "category_name", categories.slug AS "category_slug" FROM categories JOIN products ON categories.id = products.category_id ORDER BY price DESC'
     }
   } else if (filter && filter === 'new') {
     sql = `SELECT products.id, products.name AS "product_name", products.slug AS "product_slug", products.description, products.technical_specs, products.img, products.price, categories.name AS "category_name", categories.slug AS "category_slug" FROM categories JOIN products ON categories.id = products.category_id ORDER BY products.created_at DESC`
   } else if (filter && filter === 'old') {
     sql = `SELECT products.id, products.name AS "product_name", products.slug AS "product_slug", products.description, products.technical_specs, products.img, products.price, categories.name AS "category_name", categories.slug AS "category_slug" FROM categories JOIN products ON categories.id = products.category_id ORDER BY products.created_at`
+  } if (filter === 'name-asc' || filter === '') {
+    sql = 'SELECT products.id, products.name AS "product_name", products.slug AS "product_slug", products.description, products.technical_specs, products.img, products.price, categories.name AS "category_name", categories.slug AS "category_slug" FROM categories JOIN products ON categories.id = products.category_id ORDER BY products.name'
+  } else if (filter && filter === 'name-desc') {
+    sql = 'SELECT products.id, products.name AS "product_name", products.slug AS "product_slug", products.description, products.technical_specs, products.img, products.price, categories.name AS "category_name", categories.slug AS "category_slug" FROM categories JOIN products ON categories.id = products.category_id ORDER BY products.name DESC'
   }
 
   connection.query(sql, [slug], (err, results) => {
@@ -68,7 +80,7 @@ function categoryIndex(req, res) {
 function show(req, res) {
   const slug = req.params.slug;
 
-  const sql = 'SELECT products.id, products.name AS "product_name", products.slug AS "product_slug", products.description, products.technical_specs, products.img, products.price, categories.name AS "category_name", categories.slug AS "category_slug"  FROM products WHERE slug = ?';
+  const sql = 'SELECT products.id, products.name AS "product_name", products.slug AS "product_slug", products.description, products.technical_specs, products.img, products.price FROM products WHERE slug = ?';
 
   connection.query(sql, [slug], (err, results) => {
     if (err) return res.status(500).json({ error: "Database query failed" });
