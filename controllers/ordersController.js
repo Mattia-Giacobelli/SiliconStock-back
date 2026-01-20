@@ -107,8 +107,9 @@ async function sendEmail(req, res) {
     console.log(req.body);
 
 
+    await sendOrderEmail(order.email, order);
+    console.log('prima');
 
-    await sendOrderEmail(mail, orderId);
 }
 
 

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <style>
+        img {
+            width: 50px;
+        }
+    </style>
+    <h2>Grazie per il tuo ordine <b>${orderId}</b></h2>
+    <span>Totale: ${total_amount}</span>
+    <table>
+        <thead>
+            <th></th>
+            <th>Articolo</th>
+            <th>Prezzo</th>
+        </thead>
+        <tbody>
+            <tr>
+                <td>${article.img}</td>
+                <td>${artticle.name}</td>
+                <td>${artticle.price}</td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+
+</html>
