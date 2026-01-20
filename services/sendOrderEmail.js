@@ -42,7 +42,7 @@ async function sendOrderEmail(to, order) {
     userBody += `<tr>
                   <td>
                   <img src="http://localhost:3000/${article.img}" alt=""></td>
-                  <td>${article.name}</td>
+                  <td>${article.product_name}</td>
                   <td>${article.price}</td>
               </tr>`
   })
