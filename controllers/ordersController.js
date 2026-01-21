@@ -99,6 +99,24 @@ async function paymentIntent(req, res) {
     }
 };
 
+//Get discount value
+
+function getDiscountValue(req, res) {
+
+    const id = req.query.id
+
+    sql = 'SELECT * FROM discount_codes WHERE id = ?'
+
+    connection.query(sql, [id], (err, results) => {
+        if (err) return res.status(500).json({ error: "Database query failed" });
+        if (results.length === 0)
+            return res.status(404).json({ error: "Products not found" });
+        console.log(results);
+
+        res.json(results)
+    })
+}
+
 
 //Send email confirmation
 
@@ -113,4 +131,4 @@ async function sendEmail(req, res) {
 }
 
 
-module.exports = { storeOrder, paymentIntent, sendEmail };
+module.exports = { storeOrder, paymentIntent, sendEmail, getDiscountValue };
