@@ -1,7 +1,7 @@
-const connection = require("../data/db");
+const db = require("../data/db");
 
 // products index
-function index(req, res) {
+async function index(req, res) {
   const slug = req.params.slug;
 
   const searchValue = req.query.searchValue
@@ -43,51 +43,78 @@ function index(req, res) {
     sql = 'SELECT products.id, products.name AS "product_name", products.slug AS "product_slug", products.description, products.technical_specs, products.img, products.price, categories.name AS "category_name", categories.slug AS "category_slug" FROM categories JOIN products ON categories.id = products.category_id ORDER BY products.name DESC'
   }
 
-  connection.query(sql, [slug], (err, results) => {
-    if (err) return res.status(500).json({ error: "Database query failed" });
-    if (results.length === 0)
+  try {
+    const [results] = await db.query(sql, [slug]);
+
+    // check results
+    if (results.length === 0) {
       return res.status(404).json({ error: "Products not found" });
-
-    let filteredResults
-
-    if (searchValue) {
-
-      filteredResults = results.filter(result => result.product_name.toLowerCase().includes(searchValue) || result.description.toLowerCase().includes(searchValue) || result.category_name.toLowerCase().includes(searchValue))
-    } else if (!searchValue) {
-
-      filteredResults = results
     }
 
-    res.json(filteredResults)
-  })
+    let filteredResults = results;
+
+    // filter results
+    if (searchValue) {
+      const search = searchValue.toLowerCase();
+
+      filteredResults = results.filter(result =>
+        (result.product_name && result.product_name.toLowerCase().includes(search)) ||
+        (result.description && result.description.toLowerCase().includes(search)) ||
+        (result.category_name && result.category_name.toLowerCase().includes(search))
+      );
+    }
+
+    res.json(filteredResults);
+
+  } catch (err) {
+    console.error("Errore durante il recupero dei prodotti:", err);
+    res.status(500).json({ error: "Database query failed", details: err.message });
+  }
 }
 
 // category index
-function categoryIndex(req, res) {
+async function categoryIndex(req, res) {
   const slug = req.params.slug;
 
   const sql = 'SELECT products.id, products.name AS "product_name", products.slug AS "product_slug", products.description, products.technical_specs, products.img, products.price, categories.name AS "category_name", categories.slug AS "category_slug" FROM categories JOIN products ON categories.id = products.category_id WHERE categories.slug = ?'
 
-  connection.query(sql, [slug], (err, results) => {
-    if (err) return res.status(500).json({ error: "Database query failed" });
-    if (results.length === 0)
+  try {
+    const [results] = await db.query(sql, [slug]);
+
+    // check results
+    if (results.length === 0) {
       return res.status(404).json({ error: "Products not found" });
-    res.json(results)
-  })
+    }
+
+    res.json(results);
+
+  } catch (err) {
+    console.error("Errore durante l'esecuzione della query:", err);
+    // Se la query va in errore, rispondi con uno status 500 senza far crashare la connessione
+    res.status(500).json({ error: "Database query failed", details: err.message });
+  }
 }
 
 // show
-function show(req, res) {
+async function show(req, res) {
+
   const slug = req.params.slug;
 
   const sql = 'SELECT products.id, products.name AS "product_name", products.slug AS "product_slug", products.description, products.technical_specs, products.img, products.price FROM products WHERE slug = ?';
 
-  connection.query(sql, [slug], (err, results) => {
-    if (err) return res.status(500).json({ error: "Database query failed" });
-    if (results.length === 0)
+  try {
+    const [results] = await db.query(sql, [slug]);
+
+    if (results.length === 0) {
       return res.status(404).json({ error: "Product not found" });
+    }
+
     res.json(results[0]);
-  });
+
+  } catch (err) {
+    console.error("Errore durante il recupero del prodotto:", err);
+    res.status(500).json({ error: "Database query failed", details: err.message });
+  }
 }
 
 module.exports = { index, categoryIndex, show };

@@ -1,4 +1,4 @@
-const connection = require("../data/db");
+const pool = require("../data/db");
 const validator = require("validator");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const sendOrderEmail = require("../services/sendOrderEmail");
@@ -8,7 +8,7 @@ let orderId
 
 
 //orders Store
-function storeOrder(req, res) {
+async function storeOrder(req, res) {
 
 
     const { order } = req.body
@@ -40,19 +40,38 @@ function storeOrder(req, res) {
     mail = order.email
     orderId = order.id
 
-    connection.query(sql, [order.id, order.first_name, order.last_name, order.phone, order.email, order.shipping_address, order.total_amount, order.discount_code_id], (err, results) => {
-        if (err) return res.status(500).json({ error: true, message: err.message })
+    try {
+        //save order
+        const [orderResult] = await db.query(sql, [
+            order.id,
+            order.first_name,
+            order.last_name,
+            order.phone,
+            order.email,
+            order.shipping_address,
+            order.total_amount,
+            order.discount_code_id
+        ]);
 
+        // 2. insert products
+        if (order.products && order.products.length > 0) {
+            const productPromises = order.products.map(product =>
+                db.query(pivotSql, [order.id, product.id, product.quantity])
+            );
 
+            await Promise.all(productPromises);
+        }
 
-        order.products.forEach(product => {
-            connection.query(pivotSql, [order.id, product.id, product.quantity], (err, results) => {
-                if (err) return res.status(500).json({ error: true, message: err.message })
-            })
-        })
+        res.status(201).json({
+            request: "received",
+            id: orderResult.insertId || order.id
+        });
 
-        res.status(201).json({ request: "received", id: results })
-    })
+    } catch (err) {
+        console.error("Errore durante il salvataggio dell'ordine:", err);
+        // Se c'è un errore in qualsiasi punto, rispondi con errore 500 un'unica volta
+        res.status(500).json({ error: true, message: err.message });
+    }
 }
 
 
@@ -101,20 +120,30 @@ async function paymentIntent(req, res) {
 
 //Get discount value
 
-function getDiscountValue(req, res) {
+async function getDiscountValue(req, res) {
 
-    const id = req.query.id
+    const id = req.query;
 
-    sql = 'SELECT * FROM discount_codes WHERE id = ?'
+    // check input
+    if (!id) {
+        return res.status(400).json({ error: "ID mancante nei parametri della query" });
+    }
 
-    connection.query(sql, [id], (err, results) => {
-        if (err) return res.status(500).json({ error: "Database query failed" });
-        if (results.length === 0)
-            return res.status(404).json({ error: "Products not found" });
-        console.log(results);
+    const sql = 'SELECT * FROM discount_codes WHERE id = ?';
 
-        res.json(results)
-    })
+    try {
+        const [results] = await db.query(sql, [id]);
+
+        if (results.length === 0) {
+            return res.status(404).json({ error: "Discount code not found" });
+        }
+
+        res.json(results[0]);
+
+    } catch (err) {
+        console.error("Errore durante la ricerca del codice sconto:", err);
+        res.status(500).json({ error: "Database query failed", details: err.message });
+    }
 }
 
 

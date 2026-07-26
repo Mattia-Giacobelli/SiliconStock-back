@@ -1,6 +1,7 @@
+require('dotenv').config();
 const express = require("express");
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 8080;
 
 //Orders router
 const ordersRouter = require("./routers/ordersRouter");
@@ -24,7 +25,7 @@ const cors = require("cors");
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: "https://siliconstock.mattiagiacobellidev.it/",
   })
 );
 
