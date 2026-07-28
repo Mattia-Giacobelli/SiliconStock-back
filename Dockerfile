@@ -33,7 +33,7 @@ ENV NODE_ENV=production
 # Copiamo solo il necessario dallo stage di build
 COPY package*.json ./
 COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/src ./src
+COPY --from=builder /app ./
 # Se usi TypeScript e hai fatto la build in /dist, copia la cartella 'dist' invece di 'src':
 # COPY --from=builder /app/dist ./dist
 
