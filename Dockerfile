@@ -44,4 +44,4 @@ USER node
 EXPOSE 8080
 
 # Avviamo l'applicazione
-CMD ["node", "src/index.js"]
+CMD ["node", "server.js"]
