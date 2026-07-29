@@ -122,7 +122,7 @@ async function paymentIntent(req, res) {
 
 async function getDiscountValue(req, res) {
 
-    const id = req.query;
+    const { id } = req.query;
 
     // check input
     if (!id) {
