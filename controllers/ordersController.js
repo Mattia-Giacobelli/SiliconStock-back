@@ -1,4 +1,4 @@
-const pool = require("../data/db");
+const db = require("../data/db");
 const validator = require("validator");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const sendOrderEmail = require("../services/sendOrderEmail");
