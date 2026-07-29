@@ -1,4 +1,4 @@
-const connection = require("../data/db");
+const db = require("../data/db");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
@@ -10,8 +10,8 @@ async function chatbot(req, res) {
   try {
     let prompt;
 
-    const [product] = await connection.promise().query(sqlShow, [slug]);
-    const [products] = await connection.promise().query(sql);
+    const [product] = await db.query(sqlShow, [slug]);
+    const [products] = await db.query(sql);
 
     if (!products || products.length === 0) {
       return res
