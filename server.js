@@ -25,7 +25,7 @@ const cors = require("cors");
 
 app.use(
   cors({
-    origin: "https://www.mattiagiacobellidev.it/siliconStock"
+    origin: "https://www.mattiagiacobellidev.it"
   })
 );
 
