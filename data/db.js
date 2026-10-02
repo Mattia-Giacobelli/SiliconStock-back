@@ -1,3 +1,5 @@
+const fs = require('fs');
+const path = require('path');
 const mysql = require("mysql2/promise");
 
 const dbConfig = {
@@ -6,7 +8,11 @@ const dbConfig = {
   database: process.env.DATABASE,
   waitForConnections: true,
   connectionLimit: 10,
-  queueLimit: 0
+  queueLimit: 0,
+  ssl: {
+    ca: fs.readFileSync(path.join(__dirname, 'ca.pem')),
+    checkServerIdentity: () => undefined,
+  }
 };
 
 // 2. Scegli se usare il socket UNIX o IP/Porta
